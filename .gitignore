@@ -1,0 +1,4 @@
+.agents/
+dist/
+tests/host-smoke-result.txt
+node_modules/

@@ -27,4 +27,3 @@ npm run check
 ```
 
 这些测试不能替代在 Illustrator 中的实际功能验证。Windows 安装包可用 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts\build-installer.ps1` 构建；生成文件放在 `dist/`，不纳入源码仓库。构建会覆盖同名安装包。
-
