@@ -3,7 +3,7 @@ var hostBusy = false;
 var hostBackground = false;
 var TOOL_GROUPS = [
   {label:"测量统计",ids:["dimension","lineLength"]},
-  {label:"绘图加工",ids:["flange","coneFrustum","randomFill","spiral","distributeAlongPath","fourWayMirror","divideCurve"]},
+  {label:"绘图加工",ids:["flange","coneFrustum","randomFill","parametricArc","spiral","distributeAlongPath","fourWayMirror","divideCurve"]},
   {label:"文本处理",ids:["replaceText"]},
   {label:"文件导出",ids:["batchExportTopItems","saveAsAI3"]}
 ];
@@ -13,6 +13,7 @@ var TOOL_DESCRIPTIONS = {
   flange:"沿图形边缘生成可编辑的拼接折边。",
   coneFrustum:"从直径和高度计算圆台的平面展开图。",
   randomFill:"将选中的图形随机缩放、旋转并填入容器。",
+  parametricArc:"按宽度和高度绘制圆弧。",
   spiral:"以圈数、间距或目标直径构建螺旋线。",
   distributeAlongPath:"将图形沿曲线或折线规律排布。",
   fourWayMirror:"围绕指定轴线生成对称图形。",

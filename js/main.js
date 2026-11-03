@@ -1366,6 +1366,28 @@ var TOOLS = [
     }
   }
 
+  ,{
+    id: "parametricArc", name: "参数化画圆弧",
+    buildPanel: function (container) {
+      container.innerHTML = `<div class="section"><div class="section-header">圆弧参数</div><div class="section-body">
+        <div class="form-row"><label for="arc-width">宽度（毫米）</label><input id="arc-width" type="number" min="0.001" step="any" value="260.62"></div>
+        <div class="form-row"><label for="arc-height">高度（毫米）</label><input id="arc-height" type="number" min="0.001" step="any" value="20"></div>
+        <p class="hint">根据宽度和高度生成开放圆弧；未打开文档时会新建文档。</p></div></div>
+        <button class="btn" id="arc-run">▶  生成圆弧</button><div class="result-card" id="arc-result"><div class="result-row"><span class="rk">理论半径</span><span class="rv" id="arc-radius">—</span></div></div>`;
+      document.getElementById("arc-run").addEventListener("click", function () {
+        var width = Number(document.getElementById("arc-width").value), height = Number(document.getElementById("arc-height").value);
+        if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) { setStatus("err", "请输入大于 0 的有效宽度和高度"); return; }
+        var btn = this; btn.disabled = true; document.getElementById("arc-result").classList.remove("visible"); setStatus("busy", "正在生成圆弧…");
+        csInterface.evalScript("toolParametricArc(" + jsxQuote(JSON.stringify({width:width,height:height})) + ")", function (result) {
+          btn.disabled = false;
+          try { var data = parseEvalJson(result); if (data.error) { setStatus("err", data.error); return; }
+            document.getElementById("arc-radius").textContent = data.radius + " mm"; document.getElementById("arc-result").classList.add("visible"); setStatus("ok", "圆弧生成完成");
+          } catch (e) { setStatus("err", "生成圆弧失败：" + e.message); }
+        });
+      });
+    }
+  }
+
   //  ★ 新增工具模板 — 复制此块，改 id / name / buildPanel
   // ══════════════════════════════════════════════════
   /*

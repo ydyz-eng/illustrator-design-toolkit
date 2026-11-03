@@ -3721,3 +3721,112 @@ function _isReplaceTextEditable(item) {
 
   return true;
 }
+
+function toolParametricArc(paramsJson) {
+ var path = null;
+ try {
+ var params = _parseParams(paramsJson), W = Number(params.width), H = Number(params.height);
+ if (!isFinite(W) || !isFinite(H) || W <= 0 || H <= 0) return _jsonError("请输入大于 0 的有效宽度和高度");
+    // ===== 圆弧几何计算 =====
+    var mm = 72 / 25.4;
+    var a = W / 2;
+
+    // 根据弦长和弓高计算圆半径
+    var R = (a * a + H * H) / (2 * H);
+
+    // 圆心位于圆弧顶点下方
+    var cy = H - R;
+
+    var start = Math.atan2(-cy, -a);
+    var end = Math.atan2(-cy, a);
+
+    // 保证从左端点沿上方圆弧走到右端点
+    var sweep = start - end;
+    if (sweep < 0) sweep += 2 * Math.PI;
+
+    // 每段不超过45度，提高精度
+    var segments = Math.max(
+        1, Math.ceil(sweep / (Math.PI / 4))
+    );
+
+    var delta = sweep / segments;
+    var k = 4 / 3 * Math.tan(delta / 4);
+
+    // ===== Illustrator 文档 =====
+    var doc = app.documents.length ?
+        app.activeDocument :
+        app.documents.add(DocumentColorSpace.RGB);
+
+    path = doc.pathItems.add();
+
+    path.stroked = true;
+    path.filled = false;
+    path.strokeWidth = 0.25 * mm;
+
+    var black = new RGBColor();
+    black.red = 0;
+    black.green = 0;
+    black.blue = 0;
+    path.strokeColor = black;
+
+    // ===== 生成圆弧 =====
+    for (var i = 0; i <= segments; i++) {
+
+        var t = start - i * delta;
+
+        var x = a + R * Math.cos(t);
+        var y = cy + R * Math.sin(t);
+
+        var p = path.pathPoints.add();
+
+        p.anchor = [x * mm, y * mm];
+        p.pointType = PointType.SMOOTH;
+
+        // 从左向右的切线方向
+        var tx = Math.sin(t);
+        var ty = -Math.cos(t);
+
+        p.leftDirection = [
+            (x - k * R * tx) * mm,
+            (y - k * R * ty) * mm
+        ];
+
+        p.rightDirection = [
+            (x + k * R * tx) * mm,
+            (y + k * R * ty) * mm
+        ];
+    }
+
+    // 开放路径
+    path.closed = false;
+
+    // 首尾控制柄
+    path.pathPoints[0].leftDirection =
+        path.pathPoints[0].anchor;
+
+    path.pathPoints[segments].rightDirection =
+        path.pathPoints[segments].anchor;
+
+    // ===== 精确调整外接矩形 =====
+    // 校准路径的几何外接矩形，不包含描边
+    var bounds = path.geometricBounds;
+
+    var actualW = bounds[2] - bounds[0];
+    var actualH = bounds[1] - bounds[3];
+
+    if (actualW > 0 && actualH > 0) {
+        path.resize(
+            W * mm / actualW * 100,
+            H * mm / actualH * 100,
+            true, true, true, true,
+            100,
+            Transformation.CENTER
+        );
+    }
+
+    path.selected = true;
+
+
+ return _jsonObject([["radius", "s", R.toFixed(4)]]);
+ } catch (err) { if (path) { try { path.remove(); } catch (ignored) {} } return _jsonError("生成圆弧失败：" + (err.message || err)); }
+}
